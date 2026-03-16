@@ -261,7 +261,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen bg-white dark:bg-[#0A0A0A] text-black dark:text-white font-sans overflow-hidden flex flex-col transition-colors duration-300">
+    <div className="h-dvh w-full bg-white dark:bg-[#0A0A0A] text-black dark:text-white font-sans overflow-hidden flex flex-col transition-colors duration-300">
       <Header theme={theme} setTheme={setTheme} onOpenHelp={() => setIsHelpOpen(true)} />
       
       <div className="flex-1 relative flex flex-col overflow-hidden">

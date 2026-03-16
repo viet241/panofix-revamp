@@ -28,7 +28,7 @@ export const Controller: React.FC<ControllerProps> = ({
   error,
 }) => {
   return (
-    <div className="flex-shrink-0 p-3 md:p-6 bg-white/90 dark:bg-[#141414]/90 backdrop-blur-2xl border-t border-black/5 dark:border-white/5 z-40 pb-safe transition-all duration-300">
+    <div className="flex-shrink-0 p-3 pb-6 md:p-6 md:pb-7 mb-4 md:mb-0 bg-white/90 dark:bg-[#141414]/90 backdrop-blur-2xl border-t border-black/5 dark:border-white/5 z-40 pb-safe transition-all duration-300">
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-4 md:gap-6 lg:gap-12">
         
         {/* Sliders (Top on Mobile, Center on Desktop) */}

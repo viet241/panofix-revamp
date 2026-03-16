@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Upload, RefreshCw } from 'lucide-react';
+import { Upload, RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
 import * as THREE from 'three';
 import { ImageState, Theme } from '../types';
 import { FOVFan } from './FOVFan';
@@ -108,7 +108,7 @@ export const MainCanvas: React.FC<MainCanvasProps> = ({
             className="w-full h-full relative flex items-center justify-center"
           >
             {viewMode === 'map' ? (
-              <div className="w-full h-full relative flex items-center justify-center overflow-hidden">
+              <div className="w-full h-full relative flex items-center justify-center">
                 {/* FOV Fan Overlay */}
                 <AnimatePresence>
                   {isDraggingSlider && (
@@ -142,7 +142,7 @@ export const MainCanvas: React.FC<MainCanvasProps> = ({
                     />
                     <div 
                       ref={canvasRef}
-                      className="absolute inset-0 bg-white dark:bg-neutral-900/50 border border-black/5 dark:border-white/5 transition-colors duration-300"
+                      className="absolute inset-0 bg-white dark:bg-neutral-900/50 border border-black/5 dark:border-white/5 transition-colors duration-300 touch-none"
                     >
                       <motion.div
                         layout
@@ -230,10 +230,21 @@ export const MainCanvas: React.FC<MainCanvasProps> = ({
   );
 };
 
-// 360 Viewer Component (Internal to MainCanvas for now or can be separate)
+const MIN_FOV = 10;
+const MAX_FOV = 100;
+const ZOOM_STEP = 10;
+
 const Viewer360 = ({ imageUrl, hDeg, vDeg, northOff, horizonOff, theme }: { imageUrl: string, hDeg: number, vDeg: number, northOff: number, horizonOff: number, theme: Theme }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+
+  const adjustFov = useCallback((delta: number) => {
+    const cam = cameraRef.current;
+    if (!cam) return;
+    cam.fov = THREE.MathUtils.clamp(cam.fov + delta, MIN_FOV, MAX_FOV);
+    cam.updateProjectionMatrix();
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -242,31 +253,32 @@ const Viewer360 = ({ imageUrl, hDeg, vDeg, northOff, horizonOff, theme }: { imag
     const height = containerRef.current.clientHeight;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 2000);
-    
+    const camera = new THREE.PerspectiveCamera(MAX_FOV, width / height, 0.1, 2000);
+    cameraRef.current = camera;
+
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    
-    const isDark = theme === 'system' 
-      ? window.matchMedia('(prefers-color-scheme: dark)').matches 
+
+    const isDark = theme === 'system'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
       : theme === 'dark';
-    
+
     renderer.setClearColor(isDark ? 0x0A0A0A : 0xF5F5F5);
     rendererRef.current = renderer;
-    
+
     containerRef.current.innerHTML = '';
     containerRef.current.appendChild(renderer.domElement);
 
     const bgGeometry = new THREE.SphereGeometry(600, 60, 40);
     bgGeometry.scale(-1, 1, 1);
-    
-    const bgMaterial = new THREE.MeshBasicMaterial({ 
-      color: isDark ? 0xffffff : 0x000000, 
-      wireframe: true, 
-      transparent: true, 
-      opacity: 0.05 
+
+    const bgMaterial = new THREE.MeshBasicMaterial({
+      color: isDark ? 0xffffff : 0x000000,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.05
     });
     const bgSphere = new THREE.Mesh(bgGeometry, bgMaterial);
     scene.add(bgSphere);
@@ -283,9 +295,9 @@ const Viewer360 = ({ imageUrl, hDeg, vDeg, northOff, horizonOff, theme }: { imag
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.minFilter = THREE.LinearFilter;
     texture.generateMipmaps = false;
-    
-    const material = new THREE.MeshBasicMaterial({ 
-      map: texture, 
+
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
       side: THREE.DoubleSide,
       transparent: false,
       opacity: 1.0
@@ -295,7 +307,7 @@ const Viewer360 = ({ imageUrl, hDeg, vDeg, northOff, horizonOff, theme }: { imag
 
     camera.position.set(0, 0, 0.1);
 
-    let isUserInteracting = false;
+    let isPanning = false;
     let onPointerDownPointerX = 0;
     let onPointerDownPointerY = 0;
     let onPointerDownLon = 0;
@@ -303,26 +315,68 @@ const Viewer360 = ({ imageUrl, hDeg, vDeg, northOff, horizonOff, theme }: { imag
     let lon = 180;
     let lat = 0;
 
+    const pointers = new Map<number, { x: number; y: number }>();
+    let lastPinchDist = 0;
+
+    const getPinchDist = () => {
+      const pts = Array.from(pointers.values());
+      if (pts.length < 2) return 0;
+      const dx = pts[0].x - pts[1].x;
+      const dy = pts[0].y - pts[1].y;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
     const onPointerDown = (event: PointerEvent) => {
-      isUserInteracting = true;
-      onPointerDownPointerX = event.clientX;
-      onPointerDownPointerY = event.clientY;
-      onPointerDownLon = lon;
-      onPointerDownLat = lat;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+      if (pointers.size === 1) {
+        isPanning = true;
+        onPointerDownPointerX = event.clientX;
+        onPointerDownPointerY = event.clientY;
+        onPointerDownLon = lon;
+        onPointerDownLat = lat;
+      } else if (pointers.size >= 2) {
+        isPanning = false;
+        lastPinchDist = getPinchDist();
+      }
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (isUserInteracting) {
+      if (pointers.has(event.pointerId)) {
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      }
+
+      if (pointers.size >= 2) {
+        const dist = getPinchDist();
+        if (lastPinchDist > 0) {
+          const delta = (lastPinchDist - dist) * 0.15;
+          camera.fov = THREE.MathUtils.clamp(camera.fov + delta, MIN_FOV, MAX_FOV);
+          camera.updateProjectionMatrix();
+        }
+        lastPinchDist = dist;
+      } else if (isPanning) {
         lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
         lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
       }
     };
 
-    const onPointerUp = () => { isUserInteracting = false; };
+    const onPointerUp = (event: PointerEvent) => {
+      pointers.delete(event.pointerId);
+      if (pointers.size < 2) lastPinchDist = 0;
+      if (pointers.size === 0) isPanning = false;
+
+      if (pointers.size === 1) {
+        const remaining = Array.from(pointers.entries())[0];
+        isPanning = true;
+        onPointerDownPointerX = remaining[1].x;
+        onPointerDownPointerY = remaining[1].y;
+        onPointerDownLon = lon;
+        onPointerDownLat = lat;
+      }
+    };
 
     const onWheel = (event: WheelEvent) => {
-      const fov = camera.fov + event.deltaY * 0.05;
-      camera.fov = THREE.MathUtils.clamp(fov, 10, 100);
+      camera.fov = THREE.MathUtils.clamp(camera.fov + event.deltaY * 0.05, MIN_FOV, MAX_FOV);
       camera.updateProjectionMatrix();
     };
 
@@ -336,8 +390,9 @@ const Viewer360 = ({ imageUrl, hDeg, vDeg, northOff, horizonOff, theme }: { imag
     };
 
     containerRef.current.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+    containerRef.current.addEventListener('pointermove', onPointerMove);
+    containerRef.current.addEventListener('pointerup', onPointerUp);
+    containerRef.current.addEventListener('pointercancel', onPointerUp);
     containerRef.current.addEventListener('wheel', onWheel);
     window.addEventListener('resize', handleResize);
 
@@ -358,12 +413,14 @@ const Viewer360 = ({ imageUrl, hDeg, vDeg, northOff, horizonOff, theme }: { imag
 
     return () => {
       cancelAnimationFrame(animationId);
+      cameraRef.current = null;
       if (containerRef.current) {
         containerRef.current.removeEventListener('pointerdown', onPointerDown);
+        containerRef.current.removeEventListener('pointermove', onPointerMove);
+        containerRef.current.removeEventListener('pointerup', onPointerUp);
+        containerRef.current.removeEventListener('pointercancel', onPointerUp);
         containerRef.current.removeEventListener('wheel', onWheel);
       }
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('resize', handleResize);
       if (rendererRef.current) {
         rendererRef.current.dispose();
@@ -379,5 +436,23 @@ const Viewer360 = ({ imageUrl, hDeg, vDeg, northOff, horizonOff, theme }: { imag
     };
   }, [imageUrl, theme, hDeg, vDeg, northOff, horizonOff]);
 
-  return <div ref={containerRef} className="w-full h-full cursor-move" />;
+  return (
+    <div className="w-full h-full relative">
+      <div ref={containerRef} className="w-full h-full cursor-move touch-none" />
+      <div className="absolute bottom-4 right-4 flex flex-col gap-1.5 z-10">
+        <button
+          onClick={() => adjustFov(-ZOOM_STEP)}
+          className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/80 dark:bg-black/80 backdrop-blur-md border border-black/5 dark:border-white/10 flex items-center justify-center shadow-lg hover:bg-orange-500 hover:text-white active:scale-95 transition-all text-neutral-600 dark:text-neutral-300"
+        >
+          <ZoomIn className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => adjustFov(ZOOM_STEP)}
+          className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/80 dark:bg-black/80 backdrop-blur-md border border-black/5 dark:border-white/10 flex items-center justify-center shadow-lg hover:bg-orange-500 hover:text-white active:scale-95 transition-all text-neutral-600 dark:text-neutral-300"
+        >
+          <ZoomOut className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
 };
