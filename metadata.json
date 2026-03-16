@@ -1,0 +1,5 @@
+{
+  "name": "PanoFix",
+  "description": "Professional Panorama Metadata Suite. Inject Google Photo Sphere XMP metadata into your images for perfect 360° viewing.",
+  "requestFramePermissions": []
+}
