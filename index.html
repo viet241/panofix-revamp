@@ -3,39 +3,76 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PanoFix | Professional Panorama Metadata Suite</title>
-    <meta name="description" content="Inject Google Photo Sphere XMP metadata into your equirectangular images for perfect 360° viewing on Google Photos, Street View, and panorama viewers." />
-    <meta name="keywords" content="360 panorama, equirectangular, photo sphere, XMP metadata, Google Photos, Street View, pano maker" />
+    <title>PanoFix — Fix Your Panoramas, Share in 360°</title>
+    <meta name="description" content="Free online tool to inject XMP Photo Sphere metadata into JPEG panoramas. Set horizontal FOV, north direction, and horizon — then export a ready-to-view 360° image for Google Photos, Facebook, Street View, and more." />
+    <meta name="keywords" content="360 panorama, photo sphere, XMP metadata, equirectangular, Google Photos, Street View, Facebook 360, panorama editor, pano maker, GPano, inject metadata, FOV, north offset, horizon" />
     <meta name="robots" content="index, follow" />
-    <meta name="author" content="PanoFix" />
+    <meta name="author" content="viet241" />
     <link rel="canonical" href="https://panofix.viet241.com/" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="PanoFix | Professional Panorama Metadata Suite" />
-    <meta property="og:description" content="Inject Google Photo Sphere XMP metadata into your equirectangular images for perfect 360° viewing on Google Photos, Street View, and panorama viewers." />
+    <meta property="og:title" content="PanoFix — Fix Your Panoramas, Share in 360°" />
+    <meta property="og:description" content="Free browser-based tool to inject XMP Photo Sphere metadata into JPEG panoramas. Adjust FOV, north, and horizon — export a 360°-ready image in seconds." />
     <meta property="og:image" content="https://panofix.viet241.com/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="PanoFix - Inject XMP metadata for 360° panorama viewing" />
+    <meta property="og:image:alt" content="PanoFix — inject XMP metadata and turn any photo into a 360° panorama" />
     <meta property="og:url" content="https://panofix.viet241.com/" />
     <meta property="og:site_name" content="PanoFix" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="PanoFix | Professional Panorama Metadata Suite" />
-    <meta name="twitter:description" content="Inject Google Photo Sphere XMP metadata into your equirectangular images for perfect 360° viewing on Google Photos, Street View, and panorama viewers." />
+    <meta name="twitter:title" content="PanoFix — Fix Your Panoramas, Share in 360°" />
+    <meta name="twitter:description" content="Free browser-based tool to inject XMP Photo Sphere metadata into JPEG panoramas. Adjust FOV, north, and horizon — export a 360°-ready image in seconds." />
     <meta name="twitter:image" content="https://panofix.viet241.com/og-image.png" />
-    <meta name="twitter:image:alt" content="PanoFix - Inject XMP metadata for 360° panorama viewing" />
+    <meta name="twitter:image:alt" content="PanoFix — inject XMP metadata and turn any photo into a 360° panorama" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "PanoFix",
+      "url": "https://panofix.viet241.com/",
+      "description": "Free online tool to inject XMP Photo Sphere metadata into JPEG panoramas for 360° viewing on Google Photos, Facebook, Street View, and more.",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires a modern browser with JavaScript enabled",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Person", "name": "viet241", "url": "https://github.com/viet241" }
+    }
+    </script>
 
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#F97316" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='256' fill='%23F97316'/%3E%3Cpath d='M256 128c-70.7 0-128 57.3-128 128s57.3 128 128 128 128-57.3 128-128-57.3-128-128-128zm0 224c-53 0-96-43-96-96s43-96 96-96 96 43 96 96-43 96-96 96z' fill='white'/%3E%3C/svg%3E" />
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main>
+        <h1>PanoFix</h1>
+        <p><strong>Fix Your Panoramas, Share in 360°</strong></p>
+        <p>
+          PanoFix is a free, browser-based tool that injects XMP Photo Sphere (GPano) metadata into equirectangular panorama images.
+          Adjust horizontal FOV, align north and horizon, then export a 360°-ready JPEG for Google Photos, Facebook, Street View, and other panorama viewers.
+        </p>
+        <ul>
+          <li>Upload JPEG, PNG, WebP, HEIC or TIFF</li>
+          <li>Adjust horizontal FOV (vertical auto-calculated)</li>
+          <li>Align north direction and horizon line</li>
+          <li>Export with embedded XMP metadata</li>
+        </ul>
+        <p>
+          Visit <a href="https://panofix.viet241.com/">panofix.viet241.com</a>.
+        </p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

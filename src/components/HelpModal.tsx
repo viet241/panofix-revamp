@@ -49,7 +49,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <ul className="space-y-3 md:space-y-4">
                   <li className="flex gap-3 md:gap-4">
                     <span className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-[10px] md:text-xs font-bold">1</span>
-                    <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400">Upload your panorama image (JPEG or PNG).</p>
+                    <p className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400">Upload your panorama image (JPEG, PNG, WebP, HEIC or TIFF).</p>
                   </li>
                   <li className="flex gap-3 md:gap-4">
                     <span className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full bg-neutral-100 dark:bg-white/5 flex items-center justify-center text-[10px] md:text-xs font-bold">2</span>

@@ -110,8 +110,11 @@ export default function App() {
 
   const handleFile = useCallback((file: File) => {
     const isPNG = file.type === 'image/png';
-    if (!file.type.startsWith('image/jpeg') && !file.type.startsWith('image/jpg') && !isPNG) {
-      setError("Please upload JPEG/JPG or PNG images.");
+    const isWebP = file.type === 'image/webp';
+    const isHEIC = file.type === 'image/heic' || file.type === 'image/heif';
+    const isTIFF = file.type === 'image/tiff' || file.type === 'image/tif' || file.type === 'image/x-tiff';
+    if (!file.type.startsWith('image/jpeg') && !file.type.startsWith('image/jpg') && !isPNG && !isWebP && !isHEIC && !isTIFF) {
+      setError("Please upload JPEG, PNG, WebP, HEIC or TIFF images.");
       return;
     }
     setError(null);
@@ -123,21 +126,29 @@ export default function App() {
       console.log("[App] Raw XMP metadata extracted:", metadata);
 
       const img = new Image();
+      img.onerror = () => {
+        setError("Could not decode image. HEIC works best in Safari; try another format in this browser.");
+        URL.revokeObjectURL(img.src);
+      };
       img.onload = () => {
         const ratio = img.height / img.width;
-        
-        if (isPNG) {
+        const needsConvert = isPNG || isWebP || isHEIC || isTIFF;
+
+        if (needsConvert) {
           const canvas = document.createElement('canvas');
           canvas.width = img.width;
           canvas.height = img.height;
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (isPNG) {
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
             ctx.drawImage(img, 0, 0);
             canvas.toBlob((blob) => {
               if (blob) {
-                const convertedFile = new File([blob], file.name.replace(/\.png$/i, '.jpg'), { type: 'image/jpeg' });
+                const outName = file.name.replace(/\.(png|webp|heic|heif|tiff|tif)$/i, '.jpg');
+                const convertedFile = new File([blob], outName, { type: 'image/jpeg' });
                 const reader2 = new FileReader();
                 reader2.onload = (e2) => {
                   setImage({

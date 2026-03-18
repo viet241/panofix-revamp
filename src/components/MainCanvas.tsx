@@ -67,7 +67,7 @@ export const MainCanvas: React.FC<MainCanvasProps> = ({
         ref={fileInputRef} 
         onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
         className="hidden" 
-        accept="image/jpeg,image/jpg,image/png"
+        accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,image/tiff,image/tif"
       />
 
       {/* Change Image Button (Overlay) */}
@@ -98,7 +98,7 @@ export const MainCanvas: React.FC<MainCanvasProps> = ({
               <Upload className="w-6 h-6 md:w-8 md:h-8 text-neutral-400 dark:text-neutral-600" />
             </div>
             <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] md:tracking-[0.4em] text-neutral-400 dark:text-neutral-600 text-center">Drop your panorama</p>
-            <p className="text-[8px] md:text-[9px] text-neutral-500 mt-4 uppercase tracking-widest">JPEG or PNG</p>
+            <p className="text-[8px] md:text-[9px] text-neutral-500 mt-4 uppercase tracking-widest">JPEG, PNG, WebP, HEIC or TIFF</p>
           </motion.div>
         ) : (
           <motion.div 

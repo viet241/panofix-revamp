@@ -1,14 +1,16 @@
-# 360 Pano Maker
+# PanoFix
 
-Web app to edit and inject Google Photo Sphere XMP metadata into equirectangular images, enabling proper 360° display in Google Photos, Street View, and common panorama viewers.
+**Fix Your Panoramas, Share in 360°**
+
+Free, browser-based tool: inject XMP Photo Sphere (GPano) metadata into equirectangular panoramas. Set FOV, align north and horizon, then export a 360°-ready JPEG for Google Photos, Facebook, Street View, and more.
 
 ## Features
 
-- **Image upload**: JPEG/JPG or PNG (PNG is converted to JPEG before processing)
-- **FOV adjustment**: Horizontal FOV 30°–360° with vertical FOV auto-scaled by aspect ratio
-- **View modes**: Map (equirectangular) or 360° (interactive Three.js viewer)
-- **Alignment**: North offset, horizon offset
-- **Export**: Injects XMP metadata per GPano (Google Panorama) spec
+- **Image upload**: JPEG, PNG, WebP, HEIC, TIFF. Non-JPEG formats are converted to JPEG for export. (HEIC decodes best in Safari.)
+- **FOV**: Horizontal FOV 30°–360°; vertical FOV auto-scaled from aspect ratio.
+- **View modes**: Map (equirectangular) or 360° (interactive Three.js viewer with pan, pinch zoom, and zoom buttons).
+- **Alignment**: Drag North line and Horizon line on the map; export embeds pose.
+- **Export**: Single JPEG with XMP metadata per GPano spec.
 
 ## Requirements
 
@@ -17,21 +19,18 @@ Web app to edit and inject Google Photo Sphere XMP metadata into equirectangular
 ## Setup & Run
 
 ```bash
-# Install dependencies
 npm install
-
-# Run dev server
 npm run dev
 ```
 
-Open `http://localhost:3000` in your browser.
+Open `http://localhost:3000`.
 
 ## Scripts
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start dev server (port 3000, host 0.0.0.0) |
-| `npm run build` | Build for production |
+| `npm run dev` | Dev server (port 3000, host 0.0.0.0) |
+| `npm run build` | Production build |
 | `npm run preview` | Preview production build |
 | `npm run clean` | Remove dist folder |
 | `npm run lint` | Type-check (tsc) |
