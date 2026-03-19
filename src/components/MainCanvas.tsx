@@ -107,6 +107,21 @@ export const MainCanvas: React.FC<MainCanvasProps> = ({
             animate={{ opacity: 1, scale: 1 }}
             className="w-full h-full relative flex items-center justify-center"
           >
+            <AnimatePresence>
+              {isDragging && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-[55] bg-orange-500/10 dark:bg-orange-500/5 backdrop-blur-sm flex items-center justify-center pointer-events-none"
+                >
+                  <div className="bg-white/90 dark:bg-black/80 border-2 border-dashed border-orange-500 rounded-2xl px-6 py-4 flex flex-col items-center gap-2 shadow-xl">
+                    <Upload className="w-6 h-6 text-orange-500" />
+                    <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-orange-500">Drop to replace</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             {viewMode === 'map' ? (
               <div className="w-full h-full relative flex items-center justify-center">
                 {/* FOV Fan Overlay */}
