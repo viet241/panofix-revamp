@@ -18,6 +18,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'map' | '360'>('map');
   const [isDragging, setIsDragging] = useState(false);
   const [isDraggingSlider, setIsDraggingSlider] = useState(false);
+  const [draftHDegrees, setDraftHDegrees] = useState(90);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,24 +57,43 @@ export default function App() {
     }
   }, [theme]);
 
-  const handleNorthDrag = useCallback((e: React.PointerEvent | PointerEvent) => {
+  const northDraftRef = useRef(northOffset);
+  const horizonDraftRef = useRef(horizonOffset);
+
+  const setNorthOffsetSync = useCallback((val: number) => {
+    northDraftRef.current = val;
+    setNorthOffset(val);
+  }, []);
+
+  const setHorizonOffsetSync = useCallback((val: number) => {
+    horizonDraftRef.current = val;
+    setHorizonOffset(val);
+  }, []);
+
+  const handleNorthDrag = useCallback((e: PointerEvent) => {
     if (!canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    const nextNorth = (percent - 50) * 3.6;
-    console.log("[Drag] North drag", { x, percent, nextNorth });
-    setNorthOffset(nextNorth);
+    const val = (percent - 50) * 3.6;
+    northDraftRef.current = val;
+    const el = document.getElementById('north-indicator');
+    const lbl = document.getElementById('north-label');
+    if (el) el.style.left = `${(val / 3.6) + 50}%`;
+    if (lbl) lbl.textContent = `${val.toFixed(1)}°`;
   }, []);
 
-  const handleHorizonDrag = useCallback((e: React.PointerEvent | PointerEvent) => {
+  const handleHorizonDrag = useCallback((e: PointerEvent) => {
     if (!canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const y = e.clientY - rect.top;
     const percent = Math.max(0, Math.min(100, (y / rect.height) * 100));
-    const nextHorizon = (percent - 50) * 1.8;
-    console.log("[Drag] Horizon drag", { y, percent, nextHorizon });
-    setHorizonOffset(nextHorizon);
+    const val = (percent - 50) * 1.8;
+    horizonDraftRef.current = val;
+    const el = document.getElementById('horizon-indicator');
+    const lbl = document.getElementById('horizon-label');
+    if (el) el.style.top = `${(val / 1.8) + 50}%`;
+    if (lbl) lbl.textContent = `${val.toFixed(1)}°`;
   }, []);
 
   useEffect(() => {
@@ -82,10 +102,8 @@ export default function App() {
       if (isDraggingHorizon) handleHorizonDrag(e);
     };
     const onPointerUp = () => {
-      console.log("[Drag] Pointer up, final offsets", {
-        northOffset,
-        horizonOffset,
-      });
+      if (isDraggingNorth) setNorthOffsetSync(northDraftRef.current);
+      if (isDraggingHorizon) setHorizonOffsetSync(horizonDraftRef.current);
       setIsDraggingNorth(false);
       setIsDraggingHorizon(false);
     };
@@ -98,7 +116,7 @@ export default function App() {
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
     };
-  }, [isDraggingNorth, isDraggingHorizon, handleNorthDrag, handleHorizonDrag, northOffset, horizonOffset]);
+  }, [isDraggingNorth, isDraggingHorizon, handleNorthDrag, handleHorizonDrag]);
 
   const updateVDegrees = useCallback((hDeg: number, img: ImageState | null) => {
     if (img) {
@@ -313,6 +331,7 @@ export default function App() {
           theme={theme}
           isDragging={isDragging}
           isDraggingSlider={isDraggingSlider}
+          draftHDegrees={draftHDegrees}
           isDraggingNorth={isDraggingNorth}
           isDraggingHorizon={isDraggingHorizon}
           onDrop={(e) => {
@@ -334,8 +353,8 @@ export default function App() {
             e.preventDefault();
             setIsDraggingHorizon(true);
           }}
-          setNorthOffset={setNorthOffset}
-          setHorizonOffset={setHorizonOffset}
+          setNorthOffset={setNorthOffsetSync}
+          setHorizonOffset={setHorizonOffsetSync}
           fileInputRef={fileInputRef}
           handleFile={handleFile}
           canvasRef={canvasRef}
@@ -351,6 +370,7 @@ export default function App() {
         isProcessing={isProcessing}
         handleDownload={handleDownload}
         setIsDraggingSlider={setIsDraggingSlider}
+        onSliderDrag={setDraftHDegrees}
         updateVDegrees={updateVDegrees}
         error={error}
       />
