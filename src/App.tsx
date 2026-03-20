@@ -255,10 +255,37 @@ export default function App() {
       });
 
       const blob = new Blob([newBuffer], { type: 'image/jpeg' });
+      const filename = `pano_h${hDegrees}_v${vDegrees}_${image.file.name}`;
+      const outFile = new File([blob], filename, { type: 'image/jpeg' });
+
+      // Prefer native share sheet (often includes "Save Image" / "Save to Photos").
+      // Fallback to classic download for browsers that don't support file sharing.
+      try {
+        if (navigator.share) {
+          const canShare = navigator.canShare ? navigator.canShare({ files: [outFile] }) : true;
+          if (canShare) {
+            await navigator.share({
+              files: [outFile],
+              title: 'PanoFix export',
+              text: 'Fix Your Panoramas, Share in 360°',
+            });
+            return;
+          }
+        }
+      } catch (shareErr: unknown) {
+        // User may cancel the share sheet; in that case we don't show error.
+        const err = shareErr as { name?: string };
+        if (err?.name !== 'AbortError') {
+          console.warn('[Export] Share failed, fallback to download.', shareErr);
+        } else {
+          return;
+        }
+      }
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `pano_h${hDegrees}_v${vDegrees}_${image.file.name}`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -272,7 +299,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-dvh w-full bg-white dark:bg-[#0A0A0A] text-black dark:text-white font-sans overflow-hidden flex flex-col transition-colors duration-300">
+    <div className="h-dvh w-full bg-white dark:bg-[#0A0A0A] text-black dark:text-white font-sans overflow-hidden flex flex-col transition-colors duration-300 select-none">
       <Header theme={theme} setTheme={setTheme} onOpenHelp={() => setIsHelpOpen(true)} />
       
       <div className="flex-1 relative flex flex-col overflow-hidden">
